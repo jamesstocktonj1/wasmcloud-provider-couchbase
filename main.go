@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -26,18 +25,8 @@ func main() {
 
 func run() error {
 	// Handle SIGINT (CTRL+C) gracefully.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	_, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-
-	// Set up OpenTelemetry.
-	otelShutdown, err := setupOTelSDK(ctx)
-	if err != nil {
-		return err
-	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
 
 	// Initialize the provider with callbacks to track linked components
 	providerHandler := Handler{
